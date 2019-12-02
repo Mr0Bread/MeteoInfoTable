@@ -8,7 +8,7 @@ class CSVExporter(Request):
         self.request = Request()
 
     def export_to_CSV(self):
-        with open('Meteo_Info_Table.csv', mode='w', encoding='utf-8') as csv_file:
+        with open('Meteo_Info_Table_CSV.csv', mode='w', encoding='utf-8') as csv_file:
             fieldnames = ['Station', 'Time', 'TemperatureOfAir', 'AirsTempChangeInOneHour', 'Humidity', 'DewPoint',
                           'Precipitation', 'Intensity', 'Visibility', 'TrackTemp', 'TracksTempChangesInOneHour',
                           'TracksCondition', 'RouteWarning', 'FreezingPoint', 'TrackTemp2',

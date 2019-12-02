@@ -118,6 +118,10 @@ class GUI(tk.Frame, Exporter):
                                            command=self.exporter.export_to_CSV)
         self.export_to_CSV_button.grid(row=2, column=0, sticky=N)
 
+        self.export_to_json_button = Button(self.master, width=25, text="Export table to JSON", state=DISABLED,
+                                            command=self.exporter.export_to_json)
+        self.export_to_json_button.grid(row=2, column=0, sticky=S)
+
     def refresh_table(self):
         self.exporter.request.get_info_for_table()
         self.refresh_info_for_table_button.configure(text="Table is refreshed")
@@ -151,6 +155,7 @@ class GUI(tk.Frame, Exporter):
     def configure_buttons(self):
         self.fill_button.configure(state=ACTIVE)
         self.export_to_CSV_button.configure(state=ACTIVE)
+        self.export_to_json_button.configure(state=ACTIVE)
 
         if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)

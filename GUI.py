@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import mysql.connector
-from MySQLExporter import *
+from Exporter import Exporter
 
 
 def is_schema_created():
@@ -18,12 +18,11 @@ def is_schema_created():
         return False
 
 
-class GUI(tk.Frame, MySQLExporter):
+class GUI(tk.Frame, Exporter):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
-        self.request = Request()
-        self.mysql_exporter = MySQLExporter()
+        self.exporter = Exporter()
         master.title('iScrap')
         master.geometry('1400x700+250+200')
         self.create_table()
@@ -116,16 +115,16 @@ class GUI(tk.Frame, MySQLExporter):
         self.drop_schema_button.grid(row=1, column=0, padx=5, sticky=S)
 
         self.export_to_CSV_button = Button(self.master, width=25, text="Export table to CSV", state=DISABLED,
-                                           command=self.export_to_CSV)
+                                           command=self.exporter.export_to_CSV)
         self.export_to_CSV_button.grid(row=2, column=0, sticky=N)
 
     def refresh_table(self):
-        self.request.get_info_for_table()
+        self.exporter.request.get_info_for_table()
         self.refresh_info_for_table_button.configure(text="Table is refreshed")
         self.configure_buttons()
 
     def send_to_mysql_and_refresh_related_buttons(self):
-        self.mysql_exporter.send_to_mysql(self.request.table.find_all('tr', attrs={'height': '30'}))
+        self.exporter.send_to_mysql(self.exporter.request.table.find_all('tr', attrs={'height': '30'}))
         self.refresh_buttons()
 
     def drop_schema_and_refresh_related_buttons(self):
@@ -137,7 +136,7 @@ class GUI(tk.Frame, MySQLExporter):
         self.table_of_contents.delete(*self.table_of_contents.get_children())
         self.values = []
 
-        self.rows = self.request.table.find_all('tr', attrs={'height': '30'})
+        self.rows = self.exporter.request.table.find_all('tr', attrs={'height': '30'})
         i = 0
         for self.row in self.rows:
             self.values.clear()

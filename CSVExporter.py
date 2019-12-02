@@ -1,5 +1,5 @@
 import csv
-from Request import *
+from Request import Request
 
 
 class CSVExporter(Request):
@@ -8,7 +8,7 @@ class CSVExporter(Request):
         self.request = Request()
 
     def export_to_CSV(self):
-        with open('Meteo_Info_Table.csv', mode='w') as csv_file:
+        with open('Meteo_Info_Table.csv', mode='w', encoding='utf-8') as csv_file:
             fieldnames = ['Station', 'Time', 'TemperatureOfAir', 'AirsTempChangeInOneHour', 'Humidity', 'DewPoint',
                           'Precipitation', 'Intensity', 'Visibility', 'TrackTemp', 'TracksTempChangesInOneHour',
                           'TracksCondition', 'RouteWarning', 'FreezingPoint', 'TrackTemp2',
@@ -30,36 +30,6 @@ class CSVExporter(Request):
                     while i < 19:
                         values_for_csv.append(' ')
                         i += 1
-
-                for value in values_for_csv:
-                    print(value)
-
-                for i in range(len(values_for_csv)):
-                    if 'Ā' in values_for_csv[i]:
-                        values_for_csv[i].replace('Ā', 'A')
-                    elif 'ī' in values_for_csv[i]:
-                        values_for_csv[i].replace('ī', 'i')
-                    elif 'ž' in values_for_csv[i]:
-                        values_for_csv[i].replace('ž', 'z')
-                    elif 'ā' in values_for_csv[i]:
-                        values_for_csv[i].replace('ā', 'a')
-                    elif 'č' in values_for_csv[i]:
-                        values_for_csv[i].replace('č', 'c')
-                    elif 'ū' in values_for_csv[i]:
-                        values_for_csv[i].replace('ū', 'u')
-                    elif 'Ķ' in values_for_csv[i]:
-                        values_for_csv[i].replace('Ķ', 'K')
-                    elif 'š' in values_for_csv[i]:
-                        values_for_csv[i].replace('š', 's')
-                    elif 'ļ' in values_for_csv[i]:
-                        values_for_csv[i].replace('ļ', 'l')
-                    elif 'ē' in values_for_csv[i]:
-                        values_for_csv[i].replace('ē', 'e')
-                    elif 'ņ' in values_for_csv[i]:
-                        values_for_csv[i].replace('ņ', 'n')
-
-                for value in values_for_csv:
-                    print(value)
 
                 writer.writerow({'Station': values_for_csv[0],
                                  'Time': values_for_csv[1],

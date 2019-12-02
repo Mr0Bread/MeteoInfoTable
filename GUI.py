@@ -1,17 +1,29 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-
 import mysql.connector
+from MySQLExporter import Request, MySQLExporter
 
-from Request import *
+
+def is_schema_created():
+    try:
+        mysql.connector.connect(
+            host='localhost',
+            user='root',
+            passwd='mr0bread',
+            database='meteoinfo'
+        )
+        return True
+    except mysql.connector.errors.ProgrammingError:
+        return False
 
 
-class Application(tk.Frame, Request):
+class GUI(tk.Frame, MySQLExporter):
     def __init__(self, master):
         super().__init__(master)
-        self.request = Request()
         self.master = master
+        self.request = Request()
+        self.exporter = MySQLExporter()
         master.title('iScrap')
         master.geometry('1400x700')
         self.create_table()
@@ -96,10 +108,10 @@ class Application(tk.Frame, Request):
         self.fill_button.grid(row=1, column=0, pady=10, padx=5)
 
         self.send_to_mysql_button = Button(self.master, text="Send table to MySQL Database", width=25,
-                                           command=self.send_to_mysql, state=DISABLED)
+                                           command=self.send_to_mysql_and_refresh_buttons, state=DISABLED)
         self.send_to_mysql_button.grid(row=3, column=0, padx=5)
 
-        self.drop_schema_button = Button(self.master, command=self.drop_schema, width=25,
+        self.drop_schema_button = Button(self.master, command=self.drop_schema_and_refresh_related_buttons, width=25,
                                          text="Connect to MySQL firstly", state=DISABLED)
         self.drop_schema_button.grid(row=4, column=0, padx=5)
 
@@ -109,69 +121,14 @@ class Application(tk.Frame, Request):
         self.fill_button.configure(state=ACTIVE)
         self.configure_buttons()
 
-    def drop_schema(self):
-        self.connect_to_MySQL()
-        self.command = "DROP DATABASE meteoinfo"
-        self.my_cursor.execute(self.command)
-        self.database.commit()
-        self.drop_schema_button.configure(state=DISABLED, text="Database deleted")
-        self.send_to_mysql_button.configure(state=ACTIVE)
-
-    def send_to_mysql(self):
-        self.create_MySQL_table_in_database()
-        values_for_database = []
-        self.rows = self.request.table.find_all('tr', attrs={'height': '30'})
-
-        for self.row in self.rows:
-            values_for_database.clear()
-            self.cells = self.row.find_all('td')
-
-            for self.cell in self.cells:
-                values_for_database.append(self.cell.text)
-
-            if len(values_for_database) < 19:
-                i = 2
-                while i < 19:
-                    values_for_database.append('')
-                    i += 1
-
-            self.command = "INSERT INTO meteoinfotable (Station, Time, TemperatureOfAir, AirsTempChangeInOneHour,  Humidity, DewPoint, Precipitation, Intensity, Visibility, TrackTemp, TracksTempChangesInOneHour, TracksCondition, RouteWarning, FreezingPoint, TrackTemp2, TracksTemp2ChangesInOneHour, TracksCondition2, RouteWarning2, FreezingPoint2) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            self.my_cursor.execute(self.command, values_for_database)
-            self.database.commit()
-
-    def create_MySQL_table_in_database(self):
-        self.connect_to_database()
-        self.command = "CREATE TABLE meteoinfotable (Station VARCHAR(30), Time VARCHAR(45), TemperatureOfAir VARCHAR(8), AirsTempChangeInOneHour VARCHAR(10),  Humidity VARCHAR(3), DewPoint VARCHAR(6), Precipitation VARCHAR(30), Intensity VARCHAR(6), Visibility VARCHAR(4), TrackTemp VARCHAR(8), TracksTempChangesInOneHour VARCHAR(8), TracksCondition VARCHAR(20), RouteWarning VARCHAR(20), FreezingPoint VARCHAR(10), TrackTemp2 VARCHAR(8), TracksTemp2ChangesInOneHour VARCHAR(8), TracksCondition2 VARCHAR(20), RouteWarning2 VARCHAR(20), FreezingPoint2 VARCHAR(10))"
-        self.my_cursor.execute(self.command)
-        self.database.commit()
-
-    def connect_to_database(self):
-        self.create_database()
-        self.database = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            passwd='mr0bread',
-            database='meteoinfo'
-        )
-        self.my_cursor = self.database.cursor()
-
-    def create_database(self):
-        self.connect_to_MySQL()
-        self.command = "CREATE DATABASE meteoinfo"
-        self.my_cursor.execute(self.command)
+    def send_to_mysql_and_refresh_buttons(self):
+        self.exporter.send_to_mysql(self.request.table.find_all('tr', attrs={'height': '30'}))
         self.refresh_buttons()
 
-    def connect_to_MySQL(self):
-        self.database = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            passwd='mr0bread'
-        )
-        self.my_cursor = self.database.cursor()
-
-    def refresh_buttons(self):
-        self.drop_schema_button.configure(state=ACTIVE, text="Delete created database")
-        self.send_to_mysql_button.configure(state=DISABLED, text="Database was created")
+    def drop_schema_and_refresh_related_buttons(self):
+        self.drop_schema()
+        self.drop_schema_button.configure(state=DISABLED, text="Database deleted")
+        self.send_to_mysql_button.configure(state=ACTIVE, text="Create new database")
 
     def fill_table(self):
         self.table_of_contents.delete(*self.table_of_contents.get_children())
@@ -190,26 +147,13 @@ class Application(tk.Frame, Request):
 
     def configure_buttons(self):
 
-        if self.is_schema_created():
+        if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)
             self.drop_schema_button.configure(state=ACTIVE, text="Delete database firstly")
         else:
             self.send_to_mysql_button.configure(state=ACTIVE)
             self.drop_schema_button.configure(state=DISABLED, text="Deleting is not needed")
 
-    def is_schema_created(self):
-        try:
-            mysql.connector.connect(
-                host='localhost',
-                user='root',
-                passwd='mr0bread',
-                database='meteoinfo'
-            )
-            return True
-        except mysql.connector.errors.ProgrammingError:
-            return False
-
-
-root = Tk()
-app = Application(master=root)
-app.mainloop()
+    def refresh_buttons(self):
+        self.send_to_mysql_button.configure(state=DISABLED, text="Database created")
+        self.drop_schema_button.configure(state=ACTIVE, text="Delete created database")

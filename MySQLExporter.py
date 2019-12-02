@@ -1,8 +1,8 @@
 import mysql.connector
-from Request import Request
+from CSVExporter import *
 
 
-class MySQLExporter(Request):
+class MySQLExporter(CSVExporter):
 
     def drop_schema(self):
         self.connect_to_MySQL()

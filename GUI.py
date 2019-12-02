@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import mysql.connector
-from MySQLExporter import Request, MySQLExporter
+from MySQLExporter import *
 
 
 def is_schema_created():
@@ -23,9 +23,9 @@ class GUI(tk.Frame, MySQLExporter):
         super().__init__(master)
         self.master = master
         self.request = Request()
-        self.exporter = MySQLExporter()
+        self.mysql_exporter = MySQLExporter()
         master.title('iScrap')
-        master.geometry('1400x700')
+        master.geometry('1400x700+250+200')
         self.create_table()
         self.create_buttons()
 
@@ -49,7 +49,7 @@ class GUI(tk.Frame, MySQLExporter):
                                                                                    'Ceļa stāvoklis 2',
                                                                                    'Ceļa brīdinājums 2',
                                                                                    'Sasalšanas punkts 2',),
-                                                             show='headings', height=45)
+                                                             show='headings', height=50)
 
         master_table.column('Stacija', width=80, anchor=tk.CENTER, stretch=1, minwidth=60)
         master_table.column('Laiks', width=80, anchor=tk.CENTER, stretch=1, minwidth=60)
@@ -92,37 +92,40 @@ class GUI(tk.Frame, MySQLExporter):
         master_table.heading('Sasalšanas punkts 2', text='Sasalšanas punkts 2')
 
         scrollbar = tk.Scrollbar(self.master)
-        scrollbar.grid(row=5, column=2, ipady=440)
+        scrollbar.grid(row=0, column=2, ipady=488, rowspan=5)
 
         master_table.configure(yscrollcommand=scrollbar.set)
         scrollbar.configure(command=master_table.yview())
 
-        master_table.grid(row=5, column=1, rowspan=5, padx=10)
+        master_table.grid(row=0, column=1, rowspan=5, pady=10)
 
     def create_buttons(self):
         self.refresh_info_for_table_button = Button(self.master, text="Please, refresh firstly", width=25,
                                                     command=self.refresh_table)
-        self.refresh_info_for_table_button.grid(row=0, column=0, padx=5, pady=10)
+        self.refresh_info_for_table_button.grid(row=0, column=0, padx=5)
 
         self.fill_button = Button(self.master, text='Fill table', width=25, command=self.fill_table, state=DISABLED)
-        self.fill_button.grid(row=1, column=0, pady=10, padx=5)
+        self.fill_button.grid(row=0, column=0, padx=5, sticky=S)
 
         self.send_to_mysql_button = Button(self.master, text="Send table to MySQL Database", width=25,
-                                           command=self.send_to_mysql_and_refresh_buttons, state=DISABLED)
-        self.send_to_mysql_button.grid(row=3, column=0, padx=5)
+                                           command=self.send_to_mysql_and_refresh_related_buttons, state=DISABLED)
+        self.send_to_mysql_button.grid(row=1, column=0, padx=5, sticky=N)
 
         self.drop_schema_button = Button(self.master, command=self.drop_schema_and_refresh_related_buttons, width=25,
                                          text="Connect to MySQL firstly", state=DISABLED)
-        self.drop_schema_button.grid(row=4, column=0, padx=5)
+        self.drop_schema_button.grid(row=1, column=0, padx=5, sticky=S)
+
+        self.export_to_CSV_button = Button(self.master, width=25, text="Export table to CSV", state=DISABLED,
+                                           command=self.export_to_CSV)
+        self.export_to_CSV_button.grid(row=2, column=0, sticky=N)
 
     def refresh_table(self):
         self.request.get_info_for_table()
         self.refresh_info_for_table_button.configure(text="Table is refreshed")
-        self.fill_button.configure(state=ACTIVE)
         self.configure_buttons()
 
-    def send_to_mysql_and_refresh_buttons(self):
-        self.exporter.send_to_mysql(self.request.table.find_all('tr', attrs={'height': '30'}))
+    def send_to_mysql_and_refresh_related_buttons(self):
+        self.mysql_exporter.send_to_mysql(self.request.table.find_all('tr', attrs={'height': '30'}))
         self.refresh_buttons()
 
     def drop_schema_and_refresh_related_buttons(self):
@@ -144,8 +147,11 @@ class GUI(tk.Frame, MySQLExporter):
                 self.values.append(self.cell.text)
             self.table_of_contents.insert('', i, values=self.values)
             i += 1
+        self.fill_button.configure(text="Refill table")
 
     def configure_buttons(self):
+        self.fill_button.configure(state=ACTIVE)
+        self.export_to_CSV_button.configure(state=ACTIVE)
 
         if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)

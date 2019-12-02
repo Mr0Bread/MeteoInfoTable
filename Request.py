@@ -21,3 +21,9 @@ class Request:
 
         soup = BeautifulSoup(r.content, "html5lib")
         self.table = soup.find("table", attrs={"class": "norm", "id": "table-1"})
+
+    def get_headers(self):
+        row_of_headers = self.table.find('tr', attrs={"nodrag": ""})
+        headers = []
+        for header in row_of_headers:
+            headers.append(header.text)

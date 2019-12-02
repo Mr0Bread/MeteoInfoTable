@@ -1,4 +1,4 @@
-from GUI import Request, MySQLExporter, GUI
+from GUI import *
 
 from tkinter import *
 
@@ -10,7 +10,8 @@ class Main(GUI):
     def __init__(self):
         super().__init__(app)
         self.gui = app
-        self.exporter = MySQLExporter()
+        self.mysql_exporter = MySQLExporter()
+        self.csv_exporter = CSVExporter()
         self.request = Request()
 
 

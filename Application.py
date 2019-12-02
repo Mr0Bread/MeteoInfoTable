@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from Request import *
+import mysql.connector
 
 
 class Application(tk.Frame, Request):
@@ -97,7 +98,47 @@ class Application(tk.Frame, Request):
         self.send_to_mysql_button.grid(row=0, column=2, padx=20)
 
     def send_to_mysql(self):
-        pass
+        self.create_database()
+        self.connect_to_database()
+        self.create_MySQL_table_in_database()
+
+        self.rows = self.request.table.find_all('tr', attrs={'height': '30'})
+        self.values_for_database = []
+
+        for self.row in self.rows:
+            self.values_for_database.clear()
+            self.cells = self.row.find_all('td')
+
+            for self.cell in self.cells:
+                self.values_for_database.append(self.cell.text)
+
+            if len(self.values_for_database) < 19:
+                i = 2
+                while i < 19:
+                    self.values_for_database.append('-')
+                    i += 1
+
+            self.command = "INSERT INTO meteoinfotable (Station, Time, TemperatureOfAir, AirsTempChangeInOneHour,  Humidity, DewPoint, Precipitation, Intensity, Visibility, TrackTemp, TracksTempChangesInOneHour, TracksCondition, RouteWarning, FreezingPoint, TrackTemp2, TracksTemp2ChangesInOneHour, TracksCondition2, RouteWarning2, FreezingPoint2) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            self.my_cursor.execute(self.command, self.values_for_database)
+            self.database.commit()
+
+    def create_database(self):
+        self.connect_to_MySQL()
+        self.my_cursor = self.database.cursor()
+        self.command = "CREATE DATABASE meteoinfo"
+        self.my_cursor.execute(self.command)
+
+    def create_MySQL_table_in_database(self):
+        self.command = "CREATE TABLE meteoinfotable (Station VARCHAR(30), Time VARCHAR(45), TemperatureOfAir VARCHAR(8), AirsTempChangeInOneHour VARCHAR(10),  Humidity VARCHAR(3), DewPoint VARCHAR(6), Precipitation VARCHAR(30), Intensity VARCHAR(6), Visibility VARCHAR(4), TrackTemp VARCHAR(8), TracksTempChangesInOneHour VARCHAR(8), TracksCondition VARCHAR(20), RouteWarning VARCHAR(20), FreezingPoint VARCHAR(10), TrackTemp2 VARCHAR(8), TracksTemp2ChangesInOneHour VARCHAR(8), TracksCondition2 VARCHAR(20), RouteWarning2 VARCHAR(20), FreezingPoint2 VARCHAR(10))"
+        self.my_cursor.execute(self.command)
+        self.database.commit()
+
+    def connect_to_MySQL(self):
+        self.database = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            passwd='mr0bread',
+        )
 
     def refresh_table(self):
         self.request.get_info_for_table()
@@ -117,6 +158,14 @@ class Application(tk.Frame, Request):
                 self.values.append(self.cell.text)
             self.table_of_contents.insert('', i, values=self.values)
             i += 1
+
+    def connect_to_database(self):
+        self.database.connect(
+            host='localhost',
+            user='root',
+            passwd='mr0bread',
+            database='meteoinfo'
+        )
 
 
 root = Tk()

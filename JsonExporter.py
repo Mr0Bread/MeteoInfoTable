@@ -9,12 +9,13 @@ class JsonExporter(Request):
 
     def export_to_json(self):
         with open('Meteo_Info_Table_JSON.json', mode='w', encoding='utf-8') as json_file:
+            j = 0
             value_for_exporting = []
+            data_for_exporting = {}
             rows = self.request.table.find_all('tr', attrs={'height': '30'})
             for row in rows:
                 value_for_exporting.clear()
                 cells = row.find_all('td')
-                j = 0
 
                 for cell in cells:
                     value_for_exporting.append(cell.text)
@@ -50,4 +51,7 @@ class JsonExporter(Request):
                     }
                 }
 
-                json.dump(child_of_data_for_exporting, json_file, indent=1)
+                data_for_exporting[j] = child_of_data_for_exporting
+                j += 1
+
+            json.dump(data_for_exporting, json_file, indent=1)

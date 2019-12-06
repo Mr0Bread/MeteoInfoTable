@@ -2,6 +2,8 @@ import mysql.connector
 
 
 class MySQLExporter:
+    def __init__(self):
+        self.count_of_rows = 0
 
     def drop_schema(self):
         self.connect_to_MySQL()
@@ -12,8 +14,9 @@ class MySQLExporter:
     def send_to_mysql(self, rows):
         self.create_MySQL_table_in_database()
         values_for_database = []
-
+        j = 0
         for row in rows:
+            j += 1
             values_for_database.clear()
             cells = row.find_all('td')
 
@@ -30,9 +33,11 @@ class MySQLExporter:
             self.my_cursor.execute(self.command, values_for_database)
             self.database.commit()
 
+        self.count_of_rows = j
+
     def create_MySQL_table_in_database(self):
         self.connect_to_database()
-        self.command = "CREATE TABLE meteoinfotable (Station VARCHAR(30), Time VARCHAR(45), TemperatureOfAir VARCHAR(8), AirsTempChangeInOneHour VARCHAR(10),  Humidity VARCHAR(3), DewPoint VARCHAR(6), Precipitation VARCHAR(30), Intensity VARCHAR(6), Visibility VARCHAR(4), TrackTemp VARCHAR(8), TracksTempChangesInOneHour VARCHAR(8), TracksCondition VARCHAR(20), RouteWarning VARCHAR(20), FreezingPoint VARCHAR(10), TrackTemp2 VARCHAR(8), TracksTemp2ChangesInOneHour VARCHAR(8), TracksCondition2 VARCHAR(20), RouteWarning2 VARCHAR(20), FreezingPoint2 VARCHAR(10))"
+        self.command = "CREATE TABLE meteoinfotable (Station VARCHAR(30), Time VARCHAR(45), TemperatureOfAir VARCHAR(8), AirsTempChangeInOneHour VARCHAR(10),  Humidity VARCHAR(3), DewPoint VARCHAR(6), Precipitation VARCHAR(30), Intensity VARCHAR(6), Visibility VARCHAR(4), TrackTemp VARCHAR(8), TracksTempChangesInOneHour VARCHAR(8), TracksCondition VARCHAR(20), RouteWarning VARCHAR(20), FreezingPoint VARCHAR(10), TrackTemp2 VARCHAR(8), TracksTemp2ChangesInOneHour VARCHAR(8), TracksCondition2 VARCHAR(20), RouteWarning2 VARCHAR(20), FreezingPoint2 VARCHAR(10), rowID int PRIMARY KEY AUTO_INCREMENT)"
         self.my_cursor.execute(self.command)
         self.database.commit()
 

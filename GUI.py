@@ -23,7 +23,7 @@ class GUI(tk.Frame, Exporter):
         super().__init__(master)
         self.master = master
         self.exporter = Exporter()
-        master.title('iScrape')
+        master.title('iScrap')
         master.geometry('1400x700+250+200')
         self.create_table()
         self.create_buttons()
@@ -100,7 +100,7 @@ class GUI(tk.Frame, Exporter):
 
     def create_buttons(self):
         self.refresh_info_for_table_button = Button(self.master, text="Please, refresh firstly", width=25,
-                                                    command=self.refresh_info_for_table)
+                                                    command=self.refresh_table)
         self.refresh_info_for_table_button.grid(row=0, column=0, padx=5)
 
         self.fill_button = Button(self.master, text='Fill table', width=25, command=self.fill_table, state=DISABLED)
@@ -122,11 +122,7 @@ class GUI(tk.Frame, Exporter):
                                             command=self.exporter.export_to_json)
         self.export_to_json_button.grid(row=2, column=0, sticky=S)
 
-        self.enable_auto_refresh_button = Button(self.master, width=25, text="Enable Auto-Refresh", state=DISABLED,
-                                                 command=self.enable_refreshment_loop)
-        self.enable_auto_refresh_button.grid(row=0, column=3)
-
-    def refresh_info_for_table(self):
+    def refresh_table(self):
         self.exporter.request.get_info_for_table()
         self.refresh_info_for_table_button.configure(text="Table is refreshed")
         self.configure_buttons()
@@ -160,7 +156,6 @@ class GUI(tk.Frame, Exporter):
         self.fill_button.configure(state=ACTIVE)
         self.export_to_CSV_button.configure(state=ACTIVE)
         self.export_to_json_button.configure(state=ACTIVE)
-        self.enable_auto_refresh_button.configure(state=ACTIVE)
 
         if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)

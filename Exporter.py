@@ -1,9 +1,9 @@
 from CSVExporter import CSVExporter
-from MySQLExporter import MySQLExporter
 from JsonExporter import JsonExporter
+from MySQLRefresher import MySQLRefresher
 
 
-class Exporter(CSVExporter, MySQLExporter, JsonExporter):
+class Exporter(CSVExporter, JsonExporter, MySQLRefresher):
     def __init__(self):
         super().__init__()
 

@@ -23,7 +23,7 @@ class GUI(tk.Frame, Exporter):
         super().__init__(master)
         self.master = master
         self.exporter = Exporter()
-        master.title('iScrap')
+        master.title('iScrape')
         master.geometry('1400x700+250+200')
         self.create_table()
         self.create_buttons()

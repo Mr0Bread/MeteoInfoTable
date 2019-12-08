@@ -9,7 +9,6 @@ import asyncio
 class AutoRefresher(MySQLExporter, Request):
     def __init__(self):
         super().__init__()
-        self.thread = threading.Thread(target=self.auto_refresh)
         self.exporter = MySQLExporter()
         self.thread_is_running = False
         self.database = mysql.connector.connect(host='localhost',
@@ -24,6 +23,7 @@ class AutoRefresher(MySQLExporter, Request):
                               passwd='mr0bread',
                               database='meteoinfo')
         self.my_cursor = self.database.cursor()
+        self.thread = threading.Thread(target=self.auto_refresh)
         self.thread_is_running = True
         self.thread.start()
         print("thread started")
@@ -34,10 +34,12 @@ class AutoRefresher(MySQLExporter, Request):
         print("thread ended")
 
     def auto_refresh(self):
+        print("enter func")
         values_to_be_exported = []
         while self.thread_is_running:
             try:
-                time.sleep(5)
+                time.sleep(2)
+                print("try")
                 self.get_info_for_table()
                 rows = self.table.find_all('tr', attrs={'height': '30'})
                 counter = 1
@@ -48,6 +50,10 @@ class AutoRefresher(MySQLExporter, Request):
                     for cell in cells:
                         values_to_be_exported.append(cell.text)
 
+                    if len(values_to_be_exported) < 19:
+                        for i in range(2, 19):
+                            values_to_be_exported.append('')
+
                     self.command = "SELECT * FROM meteoinfotable WHERE rowID = %s"
                     rowID = counter
                     self.my_cursor.execute(self.command, (rowID,))
@@ -55,18 +61,21 @@ class AutoRefresher(MySQLExporter, Request):
                     list_of_imported_values = record[0]
                     print(list_of_imported_values)
 
-                    # if 2 != values_to_be_exported[x]:
-                    #     self.command = "UPDATE meteoinfotable SET Station = %s, Time = %s, TemperatureOfAir = %s, AirsTempChangeInOneHour = %s,  Humidity = %s, DewPoint = %s, Precipitation = %s, Intensity = %s, Visibility = %s, TrackTemp = %s, TracksTempChangesInOneHour = %s, TracksCondition = %s, RouteWarning = %s, FreezingPoint = %s, TrackTemp2 = %s, TracksTemp2ChangesInOneHour = %s, TracksCondition2 = %s, RouteWarning2 = %s, FreezingPoint2 = %s WHERE rowID = %s"
-                    #     values = (values_to_be_exported[0], values_to_be_exported[1], values_to_be_exported[2],
-                    #               values_to_be_exported[3], values_to_be_exported[4], values_to_be_exported[5],
-                    #               values_to_be_exported[6], values_to_be_exported[7], values_to_be_exported[8],
-                    #               values_to_be_exported[9], values_to_be_exported[10], values_to_be_exported[11],
-                    #               values_to_be_exported[12], values_to_be_exported[13], values_to_be_exported[14],
-                    #               values_to_be_exported[15], values_to_be_exported[16], values_to_be_exported[17],
-                    #               values_to_be_exported[18], counter + 1)
-                    #     self.my_cursor.execute(self.command, values)
-                    #     self.database.commit()
-                    #     print("checked row")
+                    for x in range(19):
+                        if values_to_be_exported[x] != list_of_imported_values[x]:
+                            self.command = "UPDATE meteoinfotable SET Station = %s, Time = %s, TemperatureOfAir = %s, AirsTempChangeInOneHour = %s,  Humidity = %s, DewPoint = %s, Precipitation = %s, Intensity = %s, Visibility = %s, TrackTemp = %s, TracksTempChangesInOneHour = %s, TracksCondition = %s, RouteWarning = %s, FreezingPoint = %s, TrackTemp2 = %s, TracksTemp2ChangesInOneHour = %s, TracksCondition2 = %s, RouteWarning2 = %s, FreezingPoint2 = %s WHERE rowID = %s"
+                            values = (values_to_be_exported[0], values_to_be_exported[1], values_to_be_exported[2],
+                                      values_to_be_exported[3], values_to_be_exported[4], values_to_be_exported[5],
+                                      values_to_be_exported[6], values_to_be_exported[7], values_to_be_exported[8],
+                                      values_to_be_exported[9], values_to_be_exported[10], values_to_be_exported[11],
+                                      values_to_be_exported[12], values_to_be_exported[13], values_to_be_exported[14],
+                                      values_to_be_exported[15], values_to_be_exported[16], values_to_be_exported[17],
+                                      values_to_be_exported[18], counter)
+                            self.my_cursor.execute(self.command, values)
+                            self.database.commit()
+                            print("found difference")
+                            break
+
                     counter += 1
             except mysql.connector.errors.ProgrammingError:
                 print("Database was deleted before ending of refresh cycle")

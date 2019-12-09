@@ -24,10 +24,8 @@ class MySQLExporter:
                 values_for_database.append(cell.text)
 
             if len(values_for_database) < 19:
-                i = 2
-                while i < 19:
+                for i in range(2, 19):
                     values_for_database.append('')
-                    i += 1
 
             self.command = "INSERT INTO meteoinfotable (Station, Time, TemperatureOfAir, AirsTempChangeInOneHour,  Humidity, DewPoint, Precipitation, Intensity, Visibility, TrackTemp, TracksTempChangesInOneHour, TracksCondition, RouteWarning, FreezingPoint, TrackTemp2, TracksTemp2ChangesInOneHour, TracksCondition2, RouteWarning2, FreezingPoint2) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             self.my_cursor.execute(self.command, values_for_database)

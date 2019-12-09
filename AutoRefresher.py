@@ -3,7 +3,6 @@ from Request import Request
 import threading
 import time
 import mysql.connector
-import asyncio
 
 
 class AutoRefresher(MySQLExporter, Request):

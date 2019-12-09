@@ -90,37 +90,41 @@ class GUI(tk.Frame, Exporter):
         master_table.heading('Ceļa brīdinājums 2', text='Ceļa brīdinājums 2')
         master_table.heading('Sasalšanas punkts 2', text='Sasalšanas punkts 2')
 
-        scrollbar = tk.Scrollbar(self.master)
-        scrollbar.grid(row=0, column=2, ipady=488, rowspan=5)
+        scrollbarV = tk.Scrollbar(self.master, orient=VERTICAL)
+        scrollbarV.grid(row=0, column=2, ipady=488, rowspan=5)
 
-        master_table.configure(yscrollcommand=scrollbar.set)
-        scrollbar.configure(command=master_table.yview())
+        master_table.configure(yscrollcommand=scrollbarV.set)
+        scrollbarV.configure(command=master_table.yview())
 
         master_table.grid(row=0, column=1, rowspan=5, pady=10)
 
     def create_buttons(self):
         self.refresh_info_for_table_button = Button(self.master, text="Please, refresh firstly", width=25,
                                                     command=self.refresh_table)
-        self.refresh_info_for_table_button.grid(row=0, column=0, padx=5)
+        self.refresh_info_for_table_button.grid(row=0, column=0, padx=5, pady=10, sticky=N)
 
         self.fill_button = Button(self.master, text='Fill table', width=25, command=self.fill_table, state=DISABLED)
-        self.fill_button.grid(row=0, column=0, padx=5, sticky=S)
+        self.fill_button.grid(row=0, column=0, padx=5)
 
         self.send_to_mysql_button = Button(self.master, text="Send table to MySQL Database", width=25,
                                            command=self.send_to_mysql_and_refresh_related_buttons, state=DISABLED)
-        self.send_to_mysql_button.grid(row=1, column=0, padx=5, sticky=N)
+        self.send_to_mysql_button.grid(row=0, column=0, padx=5, sticky=S)
 
         self.drop_schema_button = Button(self.master, command=self.drop_schema_and_refresh_related_buttons, width=25,
                                          text="Connect to MySQL firstly", state=DISABLED)
-        self.drop_schema_button.grid(row=1, column=0, padx=5, sticky=S)
+        self.drop_schema_button.grid(row=1, column=0, padx=5, sticky=N)
 
         self.export_to_CSV_button = Button(self.master, width=25, text="Export table to CSV", state=DISABLED,
                                            command=self.exporter.export_to_CSV)
-        self.export_to_CSV_button.grid(row=2, column=0, sticky=N)
+        self.export_to_CSV_button.grid(row=1, column=0)
 
         self.export_to_json_button = Button(self.master, width=25, text="Export table to JSON", state=DISABLED,
                                             command=self.exporter.export_to_json)
-        self.export_to_json_button.grid(row=2, column=0, sticky=S)
+        self.export_to_json_button.grid(row=2, column=0, sticky=N)
+
+        self.enable_auto_refresh_button = Button(self.master, width=23, text="Auto-refresh disabled", state=DISABLED,
+                                                 command=self.enable_auto_refresh_and_refresh_related_buttons)
+        self.enable_auto_refresh_button.grid(row=0, column=3, padx=5, sticky=N, pady=10)
 
     def refresh_table(self):
         self.exporter.request.get_info_for_table()
@@ -128,13 +132,30 @@ class GUI(tk.Frame, Exporter):
         self.configure_buttons()
 
     def send_to_mysql_and_refresh_related_buttons(self):
-        self.exporter.send_to_mysql(self.exporter.request.table.find_all('tr', attrs={'height': '30'}))
+        self.exporter.refresher.send_to_mysql(self.exporter.request.table.find_all('tr', attrs={'height': '30'}))
+        self.enable_auto_refresh_button.configure(state=ACTIVE)
         self.refresh_buttons()
 
+    def enable_auto_refresh_and_refresh_related_buttons(self):
+        self.exporter.refresher.enable_auto_refresh()
+        self.enable_auto_refresh_button.configure(text="Auto-refresh enabled",
+                                                  command=self.disable_auto_refresh_and_refresh_related_buttons)
+        self.refresh_info_for_table_button.configure(state=DISABLED, text="Auto-refresh enabled")
+
+    def disable_auto_refresh_and_refresh_related_buttons(self):
+        self.exporter.refresher.disable_auto_refresh()
+        self.enable_auto_refresh_button.configure(text="Auto-refresh disabled",
+                                                  command=self.enable_auto_refresh_and_refresh_related_buttons)
+        self.refresh_info_for_table_button.configure(state=ACTIVE, text="Refresh info")
+
     def drop_schema_and_refresh_related_buttons(self):
-        self.drop_schema()
+        if self.exporter.refresher.thread_is_running:
+            self.disable_auto_refresh_and_refresh_related_buttons()
+
+        self.exporter.refresher.drop_schema()
         self.drop_schema_button.configure(state=DISABLED, text="Database deleted")
         self.send_to_mysql_button.configure(state=ACTIVE, text="Create new database")
+        self.enable_auto_refresh_button.configure(state=DISABLED)
 
     def fill_table(self):
         self.table_of_contents.delete(*self.table_of_contents.get_children())
@@ -160,6 +181,7 @@ class GUI(tk.Frame, Exporter):
         if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)
             self.drop_schema_button.configure(state=ACTIVE, text="Delete database firstly")
+            self.enable_auto_refresh_button.configure(state=ACTIVE)
         else:
             self.send_to_mysql_button.configure(state=ACTIVE)
             self.drop_schema_button.configure(state=DISABLED, text="Deleting is not needed")

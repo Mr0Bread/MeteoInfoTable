@@ -2,8 +2,6 @@ import mysql.connector
 
 
 class MySQLExporter:
-    def __init__(self):
-        self.count_of_rows = 0
 
     def drop_schema(self):
         self.connect_to_MySQL()
@@ -30,8 +28,6 @@ class MySQLExporter:
             self.command = "INSERT INTO meteoinfotable (Station, Time, TemperatureOfAir, AirsTempChangeInOneHour,  Humidity, DewPoint, Precipitation, Intensity, Visibility, TrackTemp, TracksTempChangesInOneHour, TracksCondition, RouteWarning, FreezingPoint, TrackTemp2, TracksTemp2ChangesInOneHour, TracksCondition2, RouteWarning2, FreezingPoint2) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             self.my_cursor.execute(self.command, values_for_database)
             self.database.commit()
-
-        self.count_of_rows = j
 
     def create_MySQL_table_in_database(self):
         self.connect_to_database()

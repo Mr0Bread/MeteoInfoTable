@@ -126,6 +126,10 @@ class GUI(tk.Frame, Exporter):
                                                  command=self.enable_auto_refresh_and_refresh_related_buttons)
         self.enable_auto_refresh_button.grid(row=0, column=3, padx=5, sticky=N, pady=10)
 
+        self.export_to_xlsx_button = Button(self.master, width=25, text="Export to XLSX", state=DISABLED,
+                                            command=self.exporter.export_to_xlsx)
+        self.export_to_xlsx_button.grid(row=2, column=0)
+
     def refresh_table(self):
         self.exporter.request.get_info_for_table()
         self.refresh_info_for_table_button.configure(text="Table is refreshed")
@@ -159,17 +163,17 @@ class GUI(tk.Frame, Exporter):
 
     def fill_table(self):
         self.table_of_contents.delete(*self.table_of_contents.get_children())
-        self.values = []
+        values = []
 
-        self.rows = self.exporter.request.table.find_all('tr', attrs={'height': '30'})
+        rows = self.exporter.request.table.find_all('tr', attrs={'height': '30'})
         i = 0
-        for self.row in self.rows:
-            self.values.clear()
-            self.cells = self.row.find_all('td')
+        for row in rows:
+            values.clear()
+            cells = row.find_all('td')
 
-            for self.cell in self.cells:
-                self.values.append(self.cell.text)
-            self.table_of_contents.insert('', i, values=self.values)
+            for cell in cells:
+                values.append(cell.text)
+            self.table_of_contents.insert('', i, values=values)
             i += 1
         self.fill_button.configure(text="Refill table")
 
@@ -177,6 +181,7 @@ class GUI(tk.Frame, Exporter):
         self.fill_button.configure(state=ACTIVE)
         self.export_to_CSV_button.configure(state=ACTIVE)
         self.export_to_json_button.configure(state=ACTIVE)
+        self.export_to_xlsx_button.configure(state=ACTIVE)
 
         if is_schema_created():
             self.send_to_mysql_button.configure(state=DISABLED)

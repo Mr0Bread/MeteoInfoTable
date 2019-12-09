@@ -29,7 +29,6 @@ class AutoRefresher(MySQLExporter, Request):
 
     def disable_auto_refresh(self):
         self.thread_is_running = False
-        self.thread.join()
         print("thread ended")
 
     def auto_refresh(self):
